@@ -3,7 +3,7 @@ from msvcrt import getch
 from modules.file import getFile
 from modules.validators import extValidator, fileValidator, sectorNumValidator
 from modules.sector import getSectorInfos
-from modules.partition import getPartitionInfos, parsePartitionInfos
+from modules.partition import getPartitionInfos, parsePartitionInfos, getFATPartitionInfos, parseFATPartitionInfos
 
 f = None
 sectorData = ''
@@ -14,6 +14,7 @@ while True:
     print('1. 파일 열기')
     print('2. 섹터 정보')
     print('3. 파티션 정보')
+    print('4. FAT32 정보')
     print('0. 종료', end='\n\n')
     print('메뉴 선택: ', end='')
     menu = input()
@@ -63,13 +64,13 @@ while True:
             print('\n파일을 열어야 합니다.')
     elif menu == '3':
         os.system('cls')
-        count = 0
         print('파티션 정보')
+        partitionInfos = getPartitionInfos(sectorData)
+        parsedPartitionInfos = parsePartitionInfos(partitionInfos)
 
-        for e in parsePartitionInfos(getPartitionInfos(sectorData)):
-            count += 1
+        for e in parsedPartitionInfos:
             print('\n\n', end='')
-            print('Partition [%d]   '%count, end='')
+            print('Partition [%d]   '%e['partitionNum'], end='')
 
             for i in range(0, len(e['byte']), 2):
                 print(e['byte'][i:i + 2], end=' ')
@@ -81,6 +82,25 @@ while True:
             print('CHS End         %s'%e['chsEnd'])
             print('LBA Start       %d'%e['lbaStart'])
             print('size            %d Mbyte'%e['size'])
+    elif menu == '4':
+        os.system('cls')
+        print('FAT32 정보')
+        FATPartitionInfos = getFATPartitionInfos(sectorData)
+        parsedFATPartitionInfos = parseFATPartitionInfos(sectorData, FATPartitionInfos)
+        
+        for e in parsedFATPartitionInfos:
+            print('\n\n', end='')
+            print('Partition [%d]------------------------'%e['partitionNum'], end='\n\n')
+            print('Byte Per Sector%23d'%e['bytePerSector'])
+            print('Sector Per Cluster%20d'%e['sectorPerCluster'])
+            print('Reserved Sector Count%17d'%e['reservedSectorCount'])
+            print('Total Sector FAT32%20d'%e['totalSector32'])
+            print('FAT Size 32%27d'%e['fatSize32'])
+            print()
+            print('VBR Start%29d'%e['vbrStart'])
+            print('FAT#1 Start%27d'%e['fat1Start'])
+            print('FAT#2 Start%27d'%e['fat2Start'])
+            print('Root Directory Start%18d'%e['rootDirectoryStart'])
     elif menu == '0':
         print('\n프로그램을 종료합니다.')
         exit(0)
