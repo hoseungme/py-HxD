@@ -15,3 +15,26 @@ def getPartitionBytes(sectorData, cnt):
         nextSectorNum += extension[i-2:i]
     
     return partitionBytes, int(nextSectorNum, 16)
+
+def getPartitionInfos(sectorData):
+    partitionInfos = []
+    sectorNum = 0
+        
+    result, nextSectorNum = getPartitionBytes(sectorData[sectorNum:sectorNum + 512], 4)
+    partitionInfos.append({
+        'sectorNum': sectorNum,
+        'bytes': result,
+        'next': nextSectorNum
+    })
+    sectorNum = partitionInfos[0]['next'] * 512
+
+    while nextSectorNum >= 0:
+        result, nextSectorNum = getPartitionBytes(sectorData[sectorNum:sectorNum + 512], 2)
+        partitionInfos.append({
+            'sectorNum': sectorNum // 512,
+            'bytes': result,
+            'next': nextSectorNum
+        })
+            
+        sectorNum = (partitionInfos[1]['sectorNum'] + nextSectorNum) * 512
+    return partitionInfos
