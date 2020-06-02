@@ -2,7 +2,8 @@ import os
 from msvcrt import getch
 from modules.file import getFile
 from modules.validators import extValidator, fileValidator, sectorNumValidator
-from modules.tui import printSectorInfo
+from modules.sector import getSectorInfos
+from modules.partition import getPartitionInfos
 
 f = None
 sectorData = ''
@@ -46,7 +47,13 @@ while True:
                 
                 if sectorNumValidator(sectorNum, size):   
                     os.system('cls')
-                    printSectorInfo(sectorData, sectorNum * 512)
+                    
+                    print('%-15s00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F     Decoded text'%'Offset(h)', end='\n\n')
+                    for e in getSectorInfos(sectorData, sectorNum * 512):
+                        print('%-15s'%e['index'], end='')
+                        for byte in e['bytes']:
+                            print(byte, end=' ')
+                        print('    ' + e['decodedText'])
                 else:
                     print('\n섹터 번호가 잘못되었습니다.')
                     break
